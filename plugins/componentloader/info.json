@@ -1,0 +1,11 @@
+{
+    "name": "ComponentLoader",
+    "status": true,
+    "description": "Load react components",
+    "parameters": {
+        "list": [
+            "coordinatedisplay.jsx",
+            "coordinatedisplay.css"
+        ]
+    }
+}

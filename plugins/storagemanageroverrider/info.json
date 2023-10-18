@@ -1,0 +1,6 @@
+{
+    "name": "StorageManagerOverrider",
+    "status": true,
+    "description": "v1.0.0 Override the default StorageManager to use a different webStorageKey.",
+    "parameters": {}
+}

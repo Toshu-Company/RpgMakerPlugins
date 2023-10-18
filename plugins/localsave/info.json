@@ -1,0 +1,6 @@
+{
+    "name": "LocalSaveLoad",
+    "status": true,
+    "description": "Load Local Save File in Browser",
+    "parameters": {}
+}
