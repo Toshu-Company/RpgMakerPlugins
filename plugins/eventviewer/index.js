@@ -49,6 +49,74 @@ function findEvent(x, y, index) {
     }
 }
 
+function unlockRange(x1, y1, x2, y2) {
+    const events = $gameMap.events();
+    for (const event of events) {
+        const x = event.x;
+        const y = event.y;
+        if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+            unlockEvent(x, y);
+        }
+    }
+}
+
+function unlockEvent(x, y, index = 1) {
+    const event = findEvent(x, y);
+    if (event) {
+        const page = event.event().pages[index];
+        if (page.conditions.selfSwitchValid) {
+            const selfSwitchCh = page.conditions.selfSwitchCh;
+            const selfSwitch = selfSwitchTools(event.eventId(), selfSwitchCh);
+            if (selfSwitch) {
+                console.log("Event already unlocked.");
+            } else {
+                selfSwitchTools(event.eventId(), selfSwitchCh, true);
+                console.log("Event unlocked.");
+            }
+        }
+        if (page.conditions.switch1Valid) {
+            const switchId = page.conditions.switch1Id;
+            const switchValue = $gameSwitches.value(switchId);
+            if (switchValue) {
+                console.log("Event already unlocked.");
+            } else {
+                $gameSwitches.setValue(switchId, true);
+                console.log("Event unlocked.");
+            }
+        }
+        if (page.conditions.switch2Valid) {
+            const switchId = page.conditions.switch2Id;
+            const switchValue = $gameSwitches.value(switchId);
+            if (switchValue) {
+                console.log("Event already unlocked.");
+            } else {
+                $gameSwitches.setValue(switchId, true);
+                console.log("Event unlocked.");
+            }
+        }
+        if (page.conditions.switch3Valid) {
+            const switchId = page.conditions.switch3Id;
+            const switchValue = $gameSwitches.value(switchId);
+            if (switchValue) {
+                console.log("Event already unlocked.");
+            } else {
+                $gameSwitches.setValue(switchId, true);
+                console.log("Event unlocked.");
+            }
+        }
+        if (page.conditions.variableValid) {
+            const variableId = page.conditions.variableId;
+            const variableValue = $gameVariables.value(variableId);
+            if (variableValue == page.conditions.variableValue) {
+                console.log("Event already unlocked.");
+            } else {
+                $gameVariables.setValue(variableId, page.conditions.variableValue);
+                console.log("Event unlocked.");
+            }
+        }
+    }
+}
+
 function showEvent(event) {
     console.log("Event ID: " + event.eventId());
     console.log("Name: " + event.event().name);
@@ -129,7 +197,10 @@ function showEventPage(event, page) {
     console.log(pageData);
 }
 
-function selfSwitchTools(eventId, selfSwitchCh) {
+function selfSwitchTools(eventId, selfSwitchCh, value = undefined) {
     const mapId = $gameMap.mapId();
+    if (value != undefined) {
+        return $gameSelfSwitches.setValue([mapId, eventId, selfSwitchCh], value);
+    }
     return $gameSelfSwitches.value([mapId, eventId, selfSwitchCh]);
 }

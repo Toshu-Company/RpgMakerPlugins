@@ -44,6 +44,98 @@ const loadLocalSaveFile = (url) => new Promise((resolve, reject) => {
     }
 });
 
+class SaveManager {
+    static loadConfig(local = false) {
+
+    }
+    static loadGlobalInfo(local = false) {
+
+    }
+    static load(savefileId, local = false) {
+    }
+
+    static GetManager() {
+        if (SaveManagerMV.available()) {
+            return SaveManagerMV;
+        } else if (SaveManagerMZ.available()) {
+            return SaveManagerMZ;
+        }
+    }
+}
+
+class SaveManagerMV extends SaveManager {
+    static available() {
+        return Utils.RPGMAKER_NAME === 'MV';
+    }
+}
+
+class SaveManagerMZ extends SaveManager {
+    static available() {
+        return Utils.RPGMAKER_NAME === 'MZ';
+    }
+    static configFileName = 'config';
+    static globalInfoFileName = 'global';
+    static override() {
+        if (!StorageManager.isLocalMode())
+            StorageManager.fileDirectoryPath = () => "save/";
+    }
+    static async loadFromLocalFile(saveName) {
+        const filePath = StorageManager.filePath(saveName);
+        return await loadLocalSaveFile(filePath);
+    }
+    static async loadZip(saveName, local = false) {
+        if (local) {
+            return this.loadFromLocalFile(saveName);
+        } else {
+            return StorageManager.loadFromForage(saveName);
+        }
+    }
+    static async loadObject(filename, local = false) {
+        return this.loadZip(filename, local)
+            .then(zip => StorageManager.zipToJson(zip))
+            .then(json => StorageManager.jsonToObject(json));
+        // .catch(() => null);
+    }
+    static async encodeObject(object) {
+        return StorageManager.objectToJson(object)
+            .then(json => StorageManager.jsonToZip(json));
+    }
+    static async loadConfig(local = false) {
+        return this.loadObject(this.configFileName, local);
+    }
+    static async loadGlobalInfo(local = false) {
+        return this.loadObject(this.globalInfoFileName, local);
+    }
+    static async loadSave(savefileId, local = false) {
+        const saveName = DataManager.makeSavename(savefileId);
+        return this.loadObject(saveName, local);
+    }
+    static async load(savefileId, local = false) {
+        return this.loadObject(this.getName(savefileId), local);
+    }
+    static async save(savefileId, json) {
+        return StorageManager.saveObject(this.getName(savefileId), json);
+    }
+    static async reset() {
+        for (let i = -1; i < 20; i++) {
+            await StorageManager.remove(this.getName(i));
+        }
+    }
+    static getName(savefileId) {
+        switch (savefileId) {
+            case -1:
+                return this.configFileName;
+            case 0:
+                return this.globalInfoFileName;
+            default:
+                return DataManager.makeSavename(savefileId);
+        }
+    }
+    static filePath(savefileId) {
+        return StorageManager.filePath(this.getName(savefileId));
+    }
+}
+
 class Dropdown {
     menus = [];
     constructor(menus) {
@@ -168,43 +260,35 @@ selectBtn.addEventListener("click", () => optionMenu.classList.toggle("active"))
     }
 }
 
-
-async function importLocalSaveFile(savefileId) {
-    try {
-        localStorage.setItem(
-            StorageManager.webStorageKey(savefileId),
-            await loadLocalSaveFile(
-                StorageManager.localFilePath(savefileId)
-            )
-        );
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
 function load() {
-    if (!StorageManager.isLocalMode())
-        StorageManager.localFileDirectoryPath = () => "save/";
+    const manager = SaveManager.GetManager();
+    if (!manager) return;
+    manager.override();
     (async () => {
         const result = [];
         for (let i = -1; i < 20; i++) {
-            result.push(await importLocalSaveFile(i));
+            result.push(
+                await manager.load(i, true)
+                    .then(manager.save.bind(manager, i))
+                    .then(() => true)
+                    .catch(() => false)
+            );
         }
         window.location.reload();
     })();
 }
 
-function downloadSave() {
-    if (!StorageManager.isLocalMode())
-        StorageManager.localFileDirectoryPath = () => "save/";
+async function downloadSave() {
+    const manager = SaveManager.GetManager();
+    if (!manager) return;
+    manager.override();
+
     const zip = new JSZip();
+
     for (let i = -1; i < 20; i++) {
-        if (localStorage.getItem(StorageManager.webStorageKey(i))) {
-            zip.file(
-                StorageManager.localFilePath(i),
-                localStorage.getItem(StorageManager.webStorageKey(i))
-            );
+        const data = await manager.load(i);
+        if (data) {
+            zip.file(manager.filePath(i), await manager.encodeObject(data));
         }
     }
     zip.generateAsync({ type: "blob" }).then(function (content) {
@@ -251,10 +335,7 @@ window.addEventListener('load', function () {
         text: 'Reset',
         callback: () => {
             if (confirm('Are you sure?')) {
-                for (let i = -1; i < 20; i++) {
-                    StorageManager.remove(i);
-                }
-                window.location.reload();
+                SaveManager.GetManager()?.reset().then(() => window.location.reload());
             }
         }
     }]);
