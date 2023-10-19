@@ -1,0 +1,3 @@
+[submodule "rmmz-typescript-definitions"]
+	path = rmmz-typescript-definitions
+	url = https://github.com/KinoAR/rmmz-typescript-definitions

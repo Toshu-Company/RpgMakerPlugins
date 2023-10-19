@@ -6,8 +6,9 @@ function CoordinateDisplay() {
 
     useEffect(() => {
         setInterval(() => {
-            setX(window?.$gamePlayer?.x ?? 0);
-            setY(window?.$gamePlayer?.y ?? 0);
+            if (!window.$gamePlayer) return;
+            setX(window.$gamePlayer.x ?? 0);
+            setY(window.$gamePlayer.y ?? 0);
         }, 100);
     }, []);
 
