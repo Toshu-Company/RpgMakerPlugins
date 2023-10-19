@@ -31,4 +31,4 @@ function run() {
 }
 
 document.readyState === 'complete' ? run() :
-    document.addEventListener('load', run);
+    document.addEventListener('readystatechange', () => (document.readyState === 'complete') && run());

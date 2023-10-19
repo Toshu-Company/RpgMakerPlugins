@@ -64,6 +64,10 @@ function unlockEvent(x, y, index = 1) {
     const event = findEvent(x, y);
     if (event) {
         const page = event.event().pages[index];
+        if (!page) {
+            console.log("No page found.");
+            return;
+        }
         if (page.conditions.selfSwitchValid) {
             const selfSwitchCh = page.conditions.selfSwitchCh;
             const selfSwitch = selfSwitchTools(event.eventId(), selfSwitchCh);

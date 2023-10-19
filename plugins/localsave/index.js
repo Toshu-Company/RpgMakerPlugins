@@ -67,6 +67,26 @@ class SaveManagerMV extends SaveManager {
     static available() {
         return Utils.RPGMAKER_NAME === 'MV';
     }
+    static override() {
+        if (!StorageManager.isLocalMode())
+            StorageManager.localFileDirectoryPath = () => "save/";
+    }
+    static filePath(savefileId) {
+        return StorageManager.localFilePath(savefileId);
+    }
+    static async encodeObject(object) {
+        return LZString.compressToBase64(object);
+    }
+    static async load(savefileId, local = false) {
+        if (local) {
+            return LZString.decompressFromBase64(await loadLocalSaveFile(this.filePath(savefileId)));
+        } else {
+            return StorageManager.load(savefileId);
+        }
+    }
+    static async save(savefileId, json) {
+        return StorageManager.save(savefileId, json);
+    }
 }
 
 class SaveManagerMZ extends SaveManager {
@@ -288,6 +308,7 @@ async function downloadSave() {
     for (let i = -1; i < 20; i++) {
         const data = await manager.load(i);
         if (data) {
+            console.log(i, data);
             zip.file(manager.filePath(i), await manager.encodeObject(data));
         }
     }
