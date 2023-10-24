@@ -21,6 +21,8 @@ const injectPlugins = (plugins) => {
     for (const file of files) {
         if (file.isDirectory()) {
             const info = require(_path.join(path, file.name, 'info.json'));
+            if (_fs.existsSync(_path.join(path, file.name, 'setup.js')))
+                require(_path.join(path, file.name, 'setup.js'));
             _fs.copyFileSync(_path.join(path, file.name, 'index.js'), _path.join(root, 'js', 'plugins', info.name + '.js'));
             if (!plugins.find(x => x.name === info.name)) {
                 plugins.push(info);

@@ -1,0 +1,6 @@
+{
+    "name": "NodejsPolyfill",
+    "status": true,
+    "description": "Node.js polyfill for the browser",
+    "parameters": {}
+}

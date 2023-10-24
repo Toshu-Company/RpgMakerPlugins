@@ -84,8 +84,61 @@ class SaveManagerMV extends SaveManager {
             return StorageManager.load(savefileId);
         }
     }
+    static async loadExtension(local = false) {
+        const result = {};
+        if (typeof utakata === 'object') {
+            if (local) {
+                const path = StorageManager.localFilePathCommonSave();
+                const data = LZString.decompressFromBase64(await loadLocalSaveFile(path));
+                result.utakata = data;
+            } else {
+                result.utakata = StorageManager.loadCommonSave();
+            }
+        }
+        if (typeof Torigoya === 'object') {
+            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
+            if (Achievement) {
+                if (local) {
+                    result.torigoya = LZString.decompressFromBase64(
+                        await loadLocalSaveFile(
+                            this.filePath(
+                                Achievement.saveSlotID
+                            )
+                        )
+                    );
+                } else {
+                    result.torigoya = StorageManager.load(
+                        Achievement.saveSlotID
+                    );
+                }
+            }
+        }
+        return result;
+    }
+    static pathExtension(key) {
+        if (key === 'utakata') {
+            return StorageManager.localFilePathCommonSave();
+        }
+    }
+
+    static async saveExtension(data) {
+        if (typeof utakata === 'object' && data.utakata) {
+            StorageManager.saveCommonSave(data.utakata);
+        }
+        if (typeof Torigoya === 'object') {
+            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
+            if (Achievement)
+                StorageManager.save(Achievement.saveSlotID, data.torigoya);
+        }
+    }
+    static async
     static async save(savefileId, json) {
         return StorageManager.save(savefileId, json);
+    }
+    static async reset() {
+        for (let i = -1; i < 20; i++) {
+            StorageManager.remove(i);
+        }
     }
 }
 
@@ -132,6 +185,13 @@ class SaveManagerMZ extends SaveManager {
     }
     static async load(savefileId, local = false) {
         return this.loadObject(this.getName(savefileId), local);
+    }
+    static async loadExtension() {
+    }
+    static pathExtension(key) {
+    }
+
+    static async saveExtension(data) {
     }
     static async save(savefileId, json) {
         return StorageManager.saveObject(this.getName(savefileId), json);
@@ -286,7 +346,7 @@ function load() {
     manager.override();
     (async () => {
         const result = [];
-        for (let i = -1; i < 20; i++) {
+        for (let i = -1; i <= 20; i++) {
             result.push(
                 await manager.load(i, true)
                     .then(manager.save.bind(manager, i))
@@ -294,6 +354,7 @@ function load() {
                     .catch(() => false)
             );
         }
+        await manager.loadExtension().then(manager.saveExtension.bind(manager)).catch(() => null);
         window.location.reload();
     })();
 }
@@ -305,13 +366,18 @@ async function downloadSave() {
 
     const zip = new JSZip();
 
-    for (let i = -1; i < 20; i++) {
+    for (let i = -1; i <= 20; i++) {
         const data = await manager.load(i);
         if (data) {
-            console.log(i, data);
             zip.file(manager.filePath(i), await manager.encodeObject(data));
         }
     }
+
+    const extension = await manager.loadExtension();
+    for (const key in extension) {
+        zip.file(manager.pathExtension(key), await manager.encodeObject(extension[key]));
+    }
+
     zip.generateAsync({ type: "blob" }).then(function (content) {
         saveAs(content, "LocalSave.zip");
     });
@@ -364,6 +430,6 @@ window.addEventListener('load', function () {
     this.document.body.appendChild(scriptarea);
     eval(dropdown.script);
     this.setInterval(() => {
-        this.document.querySelector('.select-menu').style.display = DataManager.isMapLoaded() && Object.getOwnPropertyNames($dataMap).length ? 'none' : 'block';
+        // this.document.querySelector('.select-menu').style.display = DataManager.isMapLoaded() && Object.getOwnPropertyNames($dataMap).length ? 'none' : 'block';
     }, 1000);
 });
