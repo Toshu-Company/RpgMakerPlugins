@@ -136,7 +136,7 @@ class SaveManagerMV extends SaveManager {
         return StorageManager.save(savefileId, json);
     }
     static async reset() {
-        for (let i = -1; i < 20; i++) {
+        for (let i = -1; i <= 20; i++) {
             StorageManager.remove(i);
         }
     }
@@ -354,7 +354,7 @@ function load() {
                     .catch(() => false)
             );
         }
-        await manager.loadExtension().then(manager.saveExtension.bind(manager)).catch(() => null);
+        await manager.loadExtension(true).then(manager.saveExtension.bind(manager)).catch(() => null);
         window.location.reload();
     })();
 }
