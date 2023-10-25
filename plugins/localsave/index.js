@@ -84,51 +84,66 @@ class SaveManagerMV extends SaveManager {
             return StorageManager.load(savefileId);
         }
     }
-    static async loadExtension(local = false) {
-        const result = {};
+    static extensions() {
+        const result = [];
         if (typeof utakata === 'object') {
-            if (local) {
-                const path = StorageManager.localFilePathCommonSave();
-                const data = LZString.decompressFromBase64(await loadLocalSaveFile(path));
-                result.utakata = data;
-            } else {
-                result.utakata = StorageManager.loadCommonSave();
-            }
+            result.push('utakata');
         }
         if (typeof Torigoya === 'object') {
             const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
             if (Achievement) {
-                if (local) {
-                    result.torigoya = LZString.decompressFromBase64(
-                        await loadLocalSaveFile(
-                            this.filePath(
-                                Achievement.saveSlotID
-                            )
-                        )
-                    );
-                } else {
-                    result.torigoya = StorageManager.load(
-                        Achievement.saveSlotID
-                    );
-                }
+                result.push('Torigoya');
             }
         }
         return result;
     }
-    static pathExtension(key) {
+    static getExtensionPath(key) {
         if (key === 'utakata') {
             return StorageManager.localFilePathCommonSave();
         }
+        if (key === 'Torigoya') {
+            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
+            if (Achievement) {
+                return this.filePath(Achievement.saveSlotID);
+            }
+        }
+    }
+    static getExtensionStorageKey(key) {
+        if (key === 'utakata') {
+            return StorageManager.webStorageKeyCommonSave();
+        }
+        if (key === 'Torigoya') {
+            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
+            if (Achievement) {
+                return StorageManager.webStorageKey(Achievement.saveSlotID);
+            }
+        }
+    }
+
+    static async loadExtension(local = false) {
+        const result = {};
+        for (const key of this.extensions()) {
+            if (local) {
+                const path = this.getExtensionPath(key);
+                result[key] = LZString.decompressFromBase64(
+                    await loadLocalSaveFile(path)
+                );
+            } else {
+                var storagekey = this.getExtensionStorageKey(key);
+                var data = localStorage.getItem(storagekey);
+                result[key] = LZString.decompressFromBase64(data);
+            }
+        }
+        return result;
     }
 
     static async saveExtension(data) {
-        if (typeof utakata === 'object' && data.utakata) {
-            StorageManager.saveCommonSave(data.utakata);
-        }
-        if (typeof Torigoya === 'object') {
-            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
-            if (Achievement)
-                StorageManager.save(Achievement.saveSlotID, data.torigoya);
+        for (const key in data) {
+            if (data[key]) {
+                var storagekey = this.getExtensionStorageKey(key);
+                var _data = LZString.compressToBase64(data[key]);
+                localStorage.setItem(storagekey, _data);
+            }
         }
     }
     static async
@@ -139,6 +154,10 @@ class SaveManagerMV extends SaveManager {
         for (let i = -1; i <= 20; i++) {
             StorageManager.remove(i);
         }
+        this.extensions().forEach(x => {
+            const key = this.getExtensionStorageKey(x);
+            localStorage.removeItem(key);
+        });
     }
 }
 
@@ -375,7 +394,7 @@ async function downloadSave() {
 
     const extension = await manager.loadExtension();
     for (const key in extension) {
-        zip.file(manager.pathExtension(key), await manager.encodeObject(extension[key]));
+        zip.file(manager.getExtensionPath(key), await manager.encodeObject(extension[key]));
     }
 
     zip.generateAsync({ type: "blob" }).then(function (content) {
