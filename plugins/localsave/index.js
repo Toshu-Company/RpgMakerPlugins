@@ -87,21 +87,21 @@ class SaveManagerMV extends SaveManager {
     static extensions() {
         const result = [];
         if (typeof utakata === 'object') {
-            result.push('utakata');
+            if (utakata.CommonSaveManager)
+                result.push('utakata.CommonSaveManager');
         }
         if (typeof Torigoya === 'object') {
-            const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
-            if (Achievement) {
-                result.push('Torigoya');
+            if (Torigoya.Achievement || Torigoya.Achievement2) {
+                result.push('Torigoya.Achievement');
             }
         }
         return result;
     }
     static getExtensionPath(key) {
-        if (key === 'utakata') {
+        if (key === 'utakata.CommonSaveManager') {
             return StorageManager.localFilePathCommonSave();
         }
-        if (key === 'Torigoya') {
+        if (key === 'Torigoya.Achievement') {
             const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
             if (Achievement) {
                 return this.filePath(Achievement.saveSlotID);
@@ -109,10 +109,10 @@ class SaveManagerMV extends SaveManager {
         }
     }
     static getExtensionStorageKey(key) {
-        if (key === 'utakata') {
+        if (key === 'utakata.CommonSaveManager') {
             return StorageManager.webStorageKeyCommonSave();
         }
-        if (key === 'Torigoya') {
+        if (key === 'Torigoya.Achievement') {
             const Achievement = Torigoya.Achievement ?? Torigoya.Achievement2;
             if (Achievement) {
                 return StorageManager.webStorageKey(Achievement.saveSlotID);
