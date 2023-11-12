@@ -12,12 +12,18 @@ const commandCode = {
     128: "Change Armor",
     129: "Change Party Member",
     201: "Transfer Player",
+    231: "Show Picture",
+    235: "Erase Picture",
     250: "Play SE",
     355: "Eval Script(Entry)",
     401: "Text Parameter",
     402: "When [**]",
     403: "When Cancel",
     408: "Comment",
+    411: "Else",
+    601: "If Win",
+    602: "If Escape",
+    603: "If Lose",
     655: "Eval Script"
 }
 const commandParameter = {
@@ -414,8 +420,8 @@ function parse(event, page = 0) {
     console.log("Note: " + event.event().note);
     console.log("Pages: " + event.event().pages.length + " (Showing page " + (page + 1) + ")");
     console.log("000:  {");
-    event.event().pages[0].list.forEach((command, i, arr) => {
-        let result = parseCommand(command, arr[i + 1]);
+    event.event().pages[page].list.forEach((command, i, arr) => {
+        let result = parseCommandIndent(command, arr[i + 1]);
         if (!Array.isArray(result)) result = [result];
         result.forEach(x => {
             console.log(`${(i + 1).toString().padStart(3, "0")}: ${x}`);
@@ -705,6 +711,29 @@ function parseCommand205(command) {
         result.push(`this.setWaitMode("route")`);
     }
     return result;
+}
+
+function parseCommand231(command) {
+    const pictureId = command.parameters[0];
+    const name = command.parameters[1];
+    const origin = command.parameters[2];
+    const direct = command.parameters[3];
+    const x = direct ? command.parameters[4] : `$gameVariables.value(${command.parameters[4]})`;
+    const y = direct ? command.parameters[5] : `$gameVariables.value(${command.parameters[5]})`;
+    const scaleX = command.parameters[6];
+    const scaleY = command.parameters[7];
+    const opacity = command.parameters[8];
+    const blendMode = command.parameters[9];
+    return `showPicture(${pictureId}, ${name}, ${origin}, ${direct}, ${x}, ${y}, ${scaleX}, ${scaleY}, ${opacity}, ${blendMode})`;
+}
+
+function parseCommand235(command) {
+    return `erasePicture(${command.parameters[0]})`;
+}
+
+function parseCommand250(command) {
+    const se = command.parameters[0];
+    return `AudioManager.playSE(${JSON.stringify(se)})`;
 }
 
 /**

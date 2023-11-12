@@ -4776,6 +4776,11 @@ declare var Decrypter: DecrypterStatic;declare namespace RPG {
             switch2Valid: boolean;
 
             /**
+             * The truth value indicating whether the third [Switch] condition is valid.
+             */
+            switch3Valid: boolean;
+
+            /**
              * The truth value indicating whether the [Variable] condition is valid.
              */
             variableValid: boolean;
@@ -4804,6 +4809,11 @@ declare var Decrypter: DecrypterStatic;declare namespace RPG {
              * The ID of that switch if the second [Switch] condition is valid.
              */
             switch2Id: number;
+
+            /**
+             * The ID of that switch if the third [Switch] condition is valid.
+             */
+            switch3Id: number;
 
             /**
              * The ID of that variable if the [Variable] condition is valid.
@@ -7602,7 +7612,9 @@ declare class Game_Variables {
  * @class Game_SelfSwitches
  */
 declare class Game_SelfSwitches {
-    protected _data: {key: Array<any>};
+    protected _data: {
+        [key: string]: boolean
+    };
 
     clear(): void;
     value(key: Array<any>): boolean;
