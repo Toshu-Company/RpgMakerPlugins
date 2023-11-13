@@ -1,24 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+const { useState, useEffect, useCallback } = React;
 
-interface EventViewerProps {
-}
+function Root(): JSX.Element {
+    const [visible, setVisible] = useState(false);
 
-export function EventViewer(props: EventViewerProps): JSX.Element {
+    const onKeyUp = useCallback((event: KeyboardEvent) => {
+        if (event.ctrlKey && event.shiftKey && event.code === 'KeyE') {
+            setVisible((visible) => !visible);
+        }
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener('keyup', onKeyUp);
+        return () => document.removeEventListener('keyup', onKeyUp);
+    }, []);
+
     return (
-        <div>
-        <h1>Event Viewer</h1>
+        <div style={{display: visible ? 'block' : 'none'}}>
+            <h1>Event Viewer</h1>
         </div>
     );
 }
 
 function run() {
     const domContainer = document.createElement('div');
-    domContainer.id = 'coordinate-display';
+    domContainer.id = 'eventviewer';
     document.body.appendChild(domContainer);
 
     const root = ReactDOM.createRoot(domContainer);
-    root.render(React.createElement(EventViewer));
+    root.render(React.createElement(Root));
 
     console.log('EventViewer loaded.');
 }

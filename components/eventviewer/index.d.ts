@@ -1,6 +1,5 @@
 /// <reference types="react" />
-declare module "index" {
-    interface EventViewerProps {
-    }
-    export function EventViewer(props: EventViewerProps): JSX.Element;
-}
+declare function drawTile(x: number, y: number, lower: boolean): void;
+declare const useState: typeof React.useState, useEffect: typeof React.useEffect, useCallback: typeof React.useCallback;
+declare function Root(): JSX.Element;
+declare function run(): void;
