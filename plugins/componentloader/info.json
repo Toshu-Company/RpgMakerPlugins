@@ -5,7 +5,9 @@
     "parameters": {
         "list": [
             "coordinatedisplay.jsx",
-            "coordinatedisplay.css"
+            "coordinatedisplay.css",
+            "eventviewer.jsx",
+            "eventviewer.css"
         ]
     }
 }
