@@ -1,16 +1,16 @@
 interface PluginManagerStatic {
-  _commands: {
+  _commands?: {
     [key: string]: (command: RPG.EventCommand) => any;
   };
 
-  registerCommand: (
+  registerCommand?: (
     this: PluginManagerStatic,
     pluginName: string,
     commandName: string,
     func: (command: RPG.EventCommand) => any
   ) => void;
 
-  callCommand: (
+  callCommand?: (
     this: PluginManagerStatic,
     self: Game_Interpreter,
     pluginName: string,

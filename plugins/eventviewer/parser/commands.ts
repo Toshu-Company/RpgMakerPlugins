@@ -1,5 +1,16 @@
 function parseCommand0(command: RPG.EventCommand) {
+  // Actually, Do nothing
   return `}`;
+}
+
+function parseCommand412(command: RPG.EventCommand) {
+  // Actually, Do nothing
+  return `@412`;
+}
+
+function parseCommand404(command: RPG.EventCommand) {
+  // Actually, Do nothing
+  return `@404`;
 }
 
 function parseCommand101(command: RPG.EventCommand, next: RPG.EventCommand) {
@@ -7,9 +18,9 @@ function parseCommand101(command: RPG.EventCommand, next: RPG.EventCommand) {
   const result = [];
   result.push(`let dialog = new Dialog();`);
   result.push(`dialog.setFaceImage(${parameters[0]}, ${parameters[1]});`);
-  result.push(`dialog.setBackground(${parameters[2]});`);
-  result.push(`dialog.setPositionType(${parameters[3]});`);
-  result.push(`dialog.setSpeakerName(${parameters[4]});`);
+  if (parameters[2]) result.push(`dialog.setBackground(${parameters[2]});`);
+  if (parameters[3]) result.push(`dialog.setPositionType(${parameters[3]});`);
+  if (parameters[4]) result.push(`dialog.setSpeakerName(${parameters[4]});`);
   return result;
 }
 
@@ -74,12 +85,13 @@ function parseCommand122(command: RPG.EventCommand) {
   const operand = command.parameters[3];
 
   let res = [];
+  let value = "value";
   switch (operand) {
     case 0:
-      res.push(`let value = ${command.parameters[4]}`);
+      value = command.parameters[4];
       break;
     case 1:
-      res.push(`let value = $gameVariables.value(${command.parameters[4]})`);
+      value = `$gameVariables.value(${command.parameters[4]})`;
       break;
     case 2:
       res.push(
@@ -96,11 +108,11 @@ function parseCommand122(command: RPG.EventCommand) {
       );
       break;
     case 4:
-      res.push(`let value = eval(${command.parameters[4]})`);
+      value = `eval(${command.parameters[4]})`;
       break;
   }
   for (let i = startId; i <= endId; i++) {
-    res.push(...parseOperateVariable(i, operationType, "value"));
+    res.push(...parseOperateVariable(i, operationType, value));
   }
   return res;
 }
@@ -163,7 +175,19 @@ function parseCommand231(command: RPG.EventCommand) {
   const scaleY = command.parameters[7];
   const opacity = command.parameters[8];
   const blendMode = command.parameters[9];
-  return `showPicture(${pictureId}, ${name}, ${origin}, ${direct}, ${x}, ${y}, ${scaleX}, ${scaleY}, ${opacity}, ${blendMode})`;
+  return [
+    "showPicture(",
+    `  pictureId: ${pictureId},`,
+    `  name: ${JSON.stringify(name)},`,
+    `  origin: ${origin},`,
+    `  x: ${x},`,
+    `  y: ${y},`,
+    `  scaleX: ${scaleX},`,
+    `  scaleY: ${scaleY},`,
+    `  opacity: ${opacity},`,
+    `  blendMode: ${blendMode},`,
+    `)`,
+  ];
 }
 
 function parseCommand235(command: RPG.EventCommand) {
@@ -172,7 +196,25 @@ function parseCommand235(command: RPG.EventCommand) {
 
 function parseCommand250(command: RPG.EventCommand) {
   const se = command.parameters[0];
-  return `AudioManager.playSE(${JSON.stringify(se)})`;
+  return [`AudioManager.playSE(`, ...JSONStringify(se), `)`];
+}
+
+function parseCommand301(command: RPG.EventCommand) {
+  const troopId = (() => {
+    switch (command.parameters[0]) {
+      case 0:
+        return command.parameters[1];
+      case 1:
+        return `$gameVariables.value(${command.parameters[1]})`;
+      default:
+        return `$gamePlayer.makeEncounterTroopId();`;
+    }
+  })();
+  console.log($dataTroops[troopId]);
+  return [
+    `let battle = BattleManager.setup(${troopId}, canEscape: ${command.parameters[2]}, canLose: ${command.parameters[3]});`,
+    `SceneManager.push(Scene_Battle);`,
+  ];
 }
 
 function parseCommand355(command: RPG.EventCommand, next: RPG.EventCommand) {
@@ -184,7 +226,7 @@ function parseCommand355(command: RPG.EventCommand, next: RPG.EventCommand) {
 function parseCommand357(command: RPG.EventCommand) {
   const pluginName = command.parameters[0];
   console.log(
-    PluginManager._commands[`${pluginName}:${command.parameters[1]}`]
+    PluginManager._commands?.[`${pluginName}:${command.parameters[1]}`]
   );
   return `PluginManager.callCommand(this, "${pluginName}", ${JSON.stringify(
     command.parameters[1]
@@ -197,6 +239,18 @@ function parseCommand401(command: RPG.EventCommand) {
 
 function parseCommand402(command: RPG.EventCommand) {
   return `if (dialog.choice() == ${command.parameters[0]}) {`;
+}
+
+function parseCommand601(command: RPG.EventCommand) {
+  return `if (battle.win) {`;
+}
+
+function parseCommand602(command: RPG.EventCommand) {
+  return `if (battle.escape) {`;
+}
+
+function parseCommand603(command: RPG.EventCommand) {
+  return `if (battle.lose) {`;
 }
 
 function parseCommand655(command: RPG.EventCommand, next: RPG.EventCommand) {
@@ -221,7 +275,7 @@ function parseCommand111(command: RPG.EventCommand) {
     11: "Button",
     12: "Script",
     13: "Vehicle",
-  };
+  } as Record<number, string>;
 
   const type = command.parameters[0];
 
@@ -230,6 +284,23 @@ function parseCommand111(command: RPG.EventCommand) {
       return `if ($gameSwitches.value(${command.parameters[1]}) == ${
         command.parameters[2] == 0
       }) {`;
+    case 1:
+      const operand1 = command.parameters[1];
+      const operand2 =
+        command.parameters[2] == 0
+          ? command.parameters[3]
+          : `$gameVariables.value(${command.parameters[3]})`;
+      const operator = (
+        {
+          0: "==",
+          1: ">=",
+          2: "<=",
+          3: ">",
+          4: "<",
+          5: "!=",
+        } as Record<number, string>
+      )[command.parameters[4]];
+      return `if (${operand1} ${operator} ${operand2}) {`;
     case 8:
       return `if (hasItem(${command.parameters[1]})) {`;
     case 9:
@@ -238,6 +309,8 @@ function parseCommand111(command: RPG.EventCommand) {
       return `if (hasArmor(${command.parameters[1]})) {`;
     case 12:
       return `if (eval(${command.parameters[1]})) {`;
+    default:
+      return `if () // Not implemented: ${typeMap[type]} ${command.parameters[1]} ${command.parameters[2]}`;
   }
 }
 

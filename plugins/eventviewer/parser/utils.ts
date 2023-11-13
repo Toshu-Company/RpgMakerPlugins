@@ -121,3 +121,9 @@ function parseGameDataOperand(type: number, param1: any, param2: any) {
       break;
   }
 }
+
+function JSONStringify(value: any): string[] {
+  return JSON.stringify(value, null, 2)
+    .split("\n")
+    .map((x) => `  ${x}`);
+}
