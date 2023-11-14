@@ -574,6 +574,13 @@ function parseCommand355(command, next) {
         return [`eval(`, script];
     return `eval(${script})`;
 }
+function parseCommand356(command) {
+    if (new RPGMakerVersion(Utils.RPGMAKER_VERSION)["^"]("1.6.1")) {
+        const args = command.parameters[0].split(" ");
+        const commandName = args[0];
+        return `Game_Interpreter.prototype.pluginCommand("${commandName}", ${args.join(", ")})`;
+    }
+}
 function parseCommand357(command) {
     const pluginName = command.parameters[0];
     console.log(PluginManager._commands?.[`${pluginName}:${command.parameters[1]}`]);
@@ -812,5 +819,67 @@ function JSONStringify(value) {
     return JSON.stringify(value, null, 2)
         .split("\n")
         .map((x) => `  ${x}`);
+}
+class RPGMakerVersion {
+    constructor(version) {
+        this.version = version;
+        const [major, minor, patch] = version.split(".").map((x) => parseInt(x));
+        this.major = major;
+        this.minor = minor;
+        this.patch = patch;
+    }
+    ["<"](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major < other.major ||
+            (this.major === other.major &&
+                (this.minor < other.minor ||
+                    (this.minor === other.minor && this.patch < other.patch))));
+    }
+    [">"](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major > other.major ||
+            (this.major === other.major &&
+                (this.minor > other.minor ||
+                    (this.minor === other.minor && this.patch > other.patch))));
+    }
+    ["<="](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major < other.major ||
+            (this.major === other.major &&
+                (this.minor < other.minor ||
+                    (this.minor === other.minor && this.patch <= other.patch))));
+    }
+    [">="](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major > other.major ||
+            (this.major === other.major &&
+                (this.minor > other.minor ||
+                    (this.minor === other.minor && this.patch >= other.patch))));
+    }
+    ["=="](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major === other.major &&
+            this.minor === other.minor &&
+            this.patch === other.patch);
+    }
+    ["~"](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major === other.major &&
+            this.minor === other.minor &&
+            this.patch >= other.patch);
+    }
+    ["^"](other) {
+        if (typeof other === "string")
+            other = new RPGMakerVersion(other);
+        return (this.major === other.major &&
+            this.minor >= other.minor &&
+            this.patch >= other.patch);
+    }
 }
 //# sourceMappingURL=index.js.map

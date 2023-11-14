@@ -14,7 +14,18 @@
 
     z-index: 10000;
 
+    pointer-events: none;
+
     > * {
+        pointer-events: all;
         background-color: #151A27;
     }
+}
+
+#EventViewerCanvas {
+    z-index: 5;
+    position: absolute;
+    margin: auto;
+    inset: 0;
+    opacity: 0.5;
 }

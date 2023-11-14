@@ -19,16 +19,18 @@ function CoordinateDisplay() {
     );
 }
 
-function run() {
-    const domContainer = document.createElement('div');
-    domContainer.id = 'coordinate-display';
-    document.body.appendChild(domContainer);
+(() => {
+    function run() {
+        const domContainer = document.createElement('div');
+        domContainer.id = 'coordinate-display';
+        document.body.appendChild(domContainer);
 
-    const root = ReactDOM.createRoot(domContainer);
-    root.render(React.createElement(CoordinateDisplay));
+        const root = ReactDOM.createRoot(domContainer);
+        root.render(React.createElement(CoordinateDisplay));
 
-    console.log('CoordinateDisplay loaded.');
-}
+        console.log('CoordinateDisplay loaded.');
+    }
 
-document.readyState === 'complete' ? run() :
-    document.addEventListener('readystatechange', () => (document.readyState === 'complete') && run());
+    document.readyState === 'complete' ? run() :
+        document.addEventListener('readystatechange', () => (document.readyState === 'complete') && run());
+})();

@@ -223,6 +223,16 @@ function parseCommand355(command: RPG.EventCommand, next: RPG.EventCommand) {
   return `eval(${script})`;
 }
 
+function parseCommand356(command: RPG.EventCommand) {
+  if (new RPGMakerVersion(Utils.RPGMAKER_VERSION)["^"]("1.6.1")) {
+    const args = command.parameters[0].split(" ");
+    const commandName = args[0];
+    return `Game_Interpreter.prototype.pluginCommand("${commandName}", ${args.join(
+      ", "
+    )})`;
+  }
+}
+
 function parseCommand357(command: RPG.EventCommand) {
   const pluginName = command.parameters[0];
   console.log(

@@ -127,3 +127,82 @@ function JSONStringify(value: any): string[] {
     .split("\n")
     .map((x) => `  ${x}`);
 }
+
+class RPGMakerVersion {
+  major: number;
+  minor: number;
+  patch: number;
+  constructor(public version: string) {
+    const [major, minor, patch] = version.split(".").map((x) => parseInt(x));
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
+  ["<"](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major < other.major ||
+      (this.major === other.major &&
+        (this.minor < other.minor ||
+          (this.minor === other.minor && this.patch < other.patch)))
+    );
+  }
+
+  [">"](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major > other.major ||
+      (this.major === other.major &&
+        (this.minor > other.minor ||
+          (this.minor === other.minor && this.patch > other.patch)))
+    );
+  }
+
+  ["<="](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major < other.major ||
+      (this.major === other.major &&
+        (this.minor < other.minor ||
+          (this.minor === other.minor && this.patch <= other.patch)))
+    );
+  }
+
+  [">="](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major > other.major ||
+      (this.major === other.major &&
+        (this.minor > other.minor ||
+          (this.minor === other.minor && this.patch >= other.patch)))
+    );
+  }
+
+  ["=="](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major === other.major &&
+      this.minor === other.minor &&
+      this.patch === other.patch
+    );
+  }
+
+  ["~"](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major === other.major &&
+      this.minor === other.minor &&
+      this.patch >= other.patch
+    );
+  }
+
+  ["^"](other: RPGMakerVersion | string) {
+    if (typeof other === "string") other = new RPGMakerVersion(other);
+    return (
+      this.major === other.major &&
+      this.minor >= other.minor &&
+      this.patch >= other.patch
+    );
+  }
+}

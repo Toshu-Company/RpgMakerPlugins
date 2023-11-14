@@ -1,4 +1,5 @@
 function validateNwjsVersion () {
+    return true // for web version
     if (!(typeof require === 'function' && typeof process === 'object')) {
         return true
     }

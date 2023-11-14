@@ -6,7 +6,7 @@
   "scripts": {
     "inject": "yarn build && node index.js",
     "build": "yarn build:eventviewer",
-    "build:eventviewer": "tsc --build plugins/eventviewer"
+    "build:eventviewer": "tsc --build plugins/eventviewer && tsc --build components/eventviewer && sass components/eventviewer/css/main.scss components/eventviewer/style.css"
   },
   "devDependencies": {
     "@types/node": "^20.8.4",

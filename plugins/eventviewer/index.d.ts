@@ -60,6 +60,7 @@ declare function parseCommand235(command: RPG.EventCommand): string;
 declare function parseCommand250(command: RPG.EventCommand): string[];
 declare function parseCommand301(command: RPG.EventCommand): string[];
 declare function parseCommand355(command: RPG.EventCommand, next: RPG.EventCommand): string | any[];
+declare function parseCommand356(command: RPG.EventCommand): string | undefined;
 declare function parseCommand357(command: RPG.EventCommand): string;
 declare function parseCommand401(command: RPG.EventCommand): string;
 declare function parseCommand402(command: RPG.EventCommand): string;
@@ -77,3 +78,17 @@ declare function parseOperateValue(operation: number, operandType: number, opera
 declare function parseOperateVariable(variableId: number, operationType: number, value: string | number): string[];
 declare function parseGameDataOperand(type: number, param1: any, param2: any): string | undefined;
 declare function JSONStringify(value: any): string[];
+declare class RPGMakerVersion {
+    version: string;
+    major: number;
+    minor: number;
+    patch: number;
+    constructor(version: string);
+    ["<"](other: RPGMakerVersion | string): boolean;
+    [">"](other: RPGMakerVersion | string): boolean;
+    ["<="](other: RPGMakerVersion | string): boolean;
+    [">="](other: RPGMakerVersion | string): boolean;
+    ["=="](other: RPGMakerVersion | string): boolean;
+    ["~"](other: RPGMakerVersion | string): boolean;
+    ["^"](other: RPGMakerVersion | string): boolean;
+}
