@@ -1,21 +1,21 @@
-declare class TorigoyaMZ {
+declare class Torigoya {
   static Achievement2: TorigoyaMZ_Achievement2;
 }
 
 declare class TorigoyaMZ_Achievement2 {
   parameter: TorigoyaMZ_Achievement2.Parameter;
-  manager: TorigoyaMZ_Achievement2.AchievementManager;
+  Manager: TorigoyaMZ_Achievement2.AchievementManager;
 }
 
 namespace TorigoyaMZ_Achievement2 {
   type Parameter = {
-    baseAchievementData: AchivementData[];
+    baseAchievementData: AchievementData[];
     titleMenuText: string;
     titleMenuUseInMenu: true;
     titleMenuUseInTitle: false;
   };
 
-  type AchivementData = {
+  type AchievementData = {
     key: string;
     title: string;
     description: string;
@@ -27,9 +27,11 @@ namespace TorigoyaMZ_Achievement2 {
   };
 
   declare class AchievementManager {
-    achivements: AchivementData[];
+    achievements: AchievementData[];
     unlockInfo: Map<string, AchievementManager.UnlockInfo>;
     options: AchievementManager.Options;
+
+    unlock(key: string): boolean;
   }
 
   namespace AchievementManager {
